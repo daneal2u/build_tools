@@ -1,8 +1,7 @@
-From bcfc7f0f492bbf3e623f3e8f0e46546e2b69df24 Mon Sep 17 00:00:00 2001
+From 5b8262c61c11c9d38a57feaa57ea72fa248ea137 Mon Sep 17 00:00:00 2001
 From: Pawit Pornkitprasan <p.pawit@gmail.com>
 Date: Tue, 10 Dec 2013 20:09:12 +0700
-Subject: [PATCH] libbt: switch to N_BRCM_HCI line disclipline for userial
- ioctl
+Subject: [PATCH] libbt: switch to N_BRCM_HCI line disclipline for userial ioctl
 
 Change-Id: I12c297c6b26fc0cb6f0a36ed8f5d04d4d36a4092
 ---
@@ -10,10 +9,10 @@ Change-Id: I12c297c6b26fc0cb6f0a36ed8f5d04d4d36a4092
  1 file changed, 11 insertions(+)
 
 diff --git a/src/userial_vendor.c b/src/userial_vendor.c
-index 5d0ae9b..2ca3b6c 100644
+index 3ff518b..a038445 100644
 --- a/src/userial_vendor.c
 +++ b/src/userial_vendor.c
-@@ -197,6 +197,10 @@ int userial_vendor_open(tUSERIAL_CFG *p_cfg)
+@@ -196,6 +196,10 @@ int userial_vendor_open(tUSERIAL_CFG *p_cfg)
      uint16_t parity;
      uint8_t stop_bits;
  
@@ -24,7 +23,7 @@ index 5d0ae9b..2ca3b6c 100644
      vnd_userial.fd = -1;
  
      if (!userial_to_tcio_baud(p_cfg->baud, &baud))
-@@ -266,6 +270,13 @@ int userial_vendor_open(tUSERIAL_CFG *p_cfg)
+@@ -265,6 +269,13 @@ int userial_vendor_open(tUSERIAL_CFG *p_cfg)
      tcsetattr(vnd_userial.fd, TCSANOW, &vnd_userial.termios);
  
  #if (BT_WAKE_VIA_USERIAL_IOCTL==TRUE)
@@ -37,7 +36,6 @@ index 5d0ae9b..2ca3b6c 100644
 +
      userial_ioctl_init_bt_wake(vnd_userial.fd);
  #endif
- 
 -- 
-2.6.3
+2.8.2
 
