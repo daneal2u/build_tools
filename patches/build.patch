@@ -1,7 +1,7 @@
 From 3a1aabef3e14125bf1f8acc9145e0d784becfffb Mon Sep 17 00:00:00 2001
 From: Steve Kondik <steve@cyngn.com>
 Date: Mon, 9 Mar 2015 15:07:08 +0000
-Subject: [PATCH 1/5] build: Add support for additional kernel config snippet
+Subject: [PATCH 1/4] build: Add support for additional kernel config snippet
 
  * Add support for TARGET_KERNEL_ADDITIONAL_CONFIG which will append a
    config snippet from arch/$ARCH/configs/ to the main defconfig.
@@ -56,7 +56,7 @@ index 2c49271..764532c 100644
 From 22ab9b2ad5203ce07259d99ca2e5cef0a3b69f26 Mon Sep 17 00:00:00 2001
 From: Pawit Pornkitprasan <p.pawit@gmail.com>
 Date: Tue, 16 Dec 2014 19:19:52 +0700
-Subject: [PATCH 2/5] minigzip dependency for kernel
+Subject: [PATCH 2/4] minigzip dependency for kernel
 
 i9082 kernel uses minigzip
 
@@ -85,7 +85,7 @@ index 764532c..510047d 100644
 From 2b7772cb0e76e29bb3b4a040cc99d1c24bfcb0a5 Mon Sep 17 00:00:00 2001
 From: Cristoforo Cataldo <cristoforo.cataldo@gmail.com>
 Date: Sun, 30 Nov 2014 06:12:35 +0100
-Subject: [PATCH 3/5] core: Enable -mcpu=cortex-a9 flag for Cortex-A9 cpu
+Subject: [PATCH 3/4] core: Enable -mcpu=cortex-a9 flag for Cortex-A9 cpu
  variant
 
 Change-Id: I9294a518bcdc21ccbae72eadd9f3c1a12982d028
@@ -125,7 +125,7 @@ index 99f17aa..164dc2a 100644
 From 103cd37440f5b2397a9936d89cda932de24485c7 Mon Sep 17 00:00:00 2001
 From: Chirayu Desai <cdesai@cyanogenmod.org>
 Date: Wed, 1 May 2013 15:48:08 +0530
-Subject: [PATCH 4/5] envsetup: use $(CURDIR) for getting current directory
+Subject: [PATCH 4/4] envsetup: use $(CURDIR) for getting current directory
 
 Change-Id: I5f00faf64ec31d86dd2e48ec038748ce8499380b
 ---
@@ -145,63 +145,6 @@ index eb19f4f..08524b3 100644
  endif
  else
  OUT_DIR := $(OUT_DIR_COMMON_BASE)/$(notdir $(PWD))
--- 
-2.8.2
-
-
-From bb3841f0f4f0274da731a1543f7debbe69d636a8 Mon Sep 17 00:00:00 2001
-From: Brandon McAnsh <brandon.mcansh@gmail.com>
-Date: Sat, 10 Oct 2015 10:20:38 -0400
-Subject: [PATCH 5/5] Set kernel gcc version to 4.8 for ARM targets
-
-* This causes the check during path setup for an arm-eabi-4.9 toolchain to fail,
-      thus only leaving the arm-linux-androideabi- to exist.
-* This is only temporary as Google is building with 4.9 and 4.8 gcc's
-       have been removed in their next release
-
-Was updated to 4.9 here: https://github.com/CyanogenMod/android_build/commit/bf8346e90c5a6d5d809fa7166d50714b2b6bc30d
-Toolchain check here: https://github.com/CyanogenMod/android_build/blob/cm-13.0/envsetup.sh#L189
-
-Change-Id: I24bff10e392a6cdced1797870e523144e83d611d
-Signed-off-by: Brandon McAnsh <brandon.mcansh@gmail.com>
----
- core/combo/TARGET_linux-arm.mk | 1 +
- envsetup.sh                    | 3 ++-
- 2 files changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/core/combo/TARGET_linux-arm.mk b/core/combo/TARGET_linux-arm.mk
-index 3651c39..5020865 100644
---- a/core/combo/TARGET_linux-arm.mk
-+++ b/core/combo/TARGET_linux-arm.mk
-@@ -39,6 +39,7 @@ $(combo_2nd_arch_prefix)TARGET_NDK_GCC_VERSION := 4.9
- 
- ifeq ($(strip $(TARGET_GCC_VERSION_EXP)),)
- $(combo_2nd_arch_prefix)TARGET_GCC_VERSION := 4.9
-+$(combo_2nd_arch_prefix)TARGET_LEGACY_GCC_VERSION := 4.8
- else
- $(combo_2nd_arch_prefix)TARGET_GCC_VERSION := $(TARGET_GCC_VERSION_EXP)
- endif
-diff --git a/envsetup.sh b/envsetup.sh
-index dba64ee..5d0696d 100644
---- a/envsetup.sh
-+++ b/envsetup.sh
-@@ -129,6 +129,7 @@ function setpaths()
-     # defined in core/config.mk
-     targetgccversion=$(get_build_var TARGET_GCC_VERSION)
-     targetgccversion2=$(get_build_var 2ND_TARGET_GCC_VERSION)
-+    targetlegacygccversion=$(get_build_var TARGET_LEGACY_GCC_VERSION)
-     export TARGET_GCC_VERSION=$targetgccversion
- 
-     # The gcc toolchain does not exists for windows/cygwin. In this case, do not reference it.
-@@ -164,7 +165,7 @@ function setpaths()
-     case $ARCH in
-         arm)
-             # Legacy toolchain configuration used for ARM kernel compilation
--            toolchaindir=arm/arm-eabi-$targetgccversion/bin
-+            toolchaindir=arm/arm-eabi-$targetlegacygccversion/bin
-             if [ -d "$gccprebuiltdir/$toolchaindir" ]; then
-                  export ARM_EABI_TOOLCHAIN="$gccprebuiltdir/$toolchaindir"
-                  ANDROID_KERNEL_TOOLCHAIN_PATH="$ARM_EABI_TOOLCHAIN":
 -- 
 2.8.2
 

@@ -23,9 +23,9 @@ index b1dde80..8c1c962 100644
 +    if (info->hasQuirk("requires-flush-before-shutdown")) {
 +        quirks |= kRequiresFlushBeforeShutdown;
 +    }
- 
-     return quirks;
- }
+ #ifdef DOLBY_ENABLE
+     quirks |= getDolbyComponentQuirks(info);
+ #endif // DOLBY_END
 -- 
 2.8.2
 
