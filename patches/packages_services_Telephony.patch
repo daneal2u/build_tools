@@ -1,4 +1,4 @@
-From 2b3eec32a3d460a9f43477f4b19419afa347370d Mon Sep 17 00:00:00 2001
+From 26a08fc9e416fc2ddceebed146b11e769dc469b7 Mon Sep 17 00:00:00 2001
 From: Pawit Pornkitprasan <p.pawit@gmail.com>
 Date: Mon, 28 Dec 2015 19:37:32 +0700
 Subject: [PATCH] On create, values need to be read from the RIL, not set
@@ -33,10 +33,10 @@ other phones.
  1 file changed, 27 insertions(+), 3 deletions(-)
 
 diff --git a/src/com/android/phone/MobileNetworkSettings.java b/src/com/android/phone/MobileNetworkSettings.java
-index c94bf4c..0b33e3f 100644
+index 40901a9..d10398e 100644
 --- a/src/com/android/phone/MobileNetworkSettings.java
 +++ b/src/com/android/phone/MobileNetworkSettings.java
-@@ -724,8 +724,7 @@ public class MobileNetworkSettings extends PreferenceActivity
+@@ -731,8 +731,7 @@ public class MobileNetworkSettings extends PreferenceActivity
          UpdatePreferredNetworkModeSummary(settingsNetworkMode);
          UpdateEnabledNetworksValueAndSummary(settingsNetworkMode);
          // Display preferred network type based on what modem returns b/18676277
@@ -46,7 +46,7 @@ index c94bf4c..0b33e3f 100644
  
          /**
           * Enable/disable depending upon if there are any active subscriptions.
-@@ -922,7 +921,6 @@ public class MobileNetworkSettings extends PreferenceActivity
+@@ -935,7 +934,6 @@ public class MobileNetworkSettings extends PreferenceActivity
              return true;
          }
  
@@ -54,7 +54,7 @@ index c94bf4c..0b33e3f 100644
          // always let the preference setting proceed.
          return true;
      }
-@@ -930,6 +928,7 @@ public class MobileNetworkSettings extends PreferenceActivity
+@@ -943,6 +941,7 @@ public class MobileNetworkSettings extends PreferenceActivity
      private class MyHandler extends Handler {
  
          static final int MESSAGE_SET_PREFERRED_NETWORK_TYPE = 0;
@@ -62,7 +62,7 @@ index c94bf4c..0b33e3f 100644
  
          @Override
          public void handleMessage(Message msg) {
-@@ -937,6 +936,9 @@ public class MobileNetworkSettings extends PreferenceActivity
+@@ -950,6 +949,9 @@ public class MobileNetworkSettings extends PreferenceActivity
                  case MESSAGE_SET_PREFERRED_NETWORK_TYPE:
                      handleSetPreferredNetworkTypeResponse(msg);
                      break;
@@ -72,7 +72,7 @@ index c94bf4c..0b33e3f 100644
              }
          }
  
-@@ -967,6 +969,28 @@ public class MobileNetworkSettings extends PreferenceActivity
+@@ -980,6 +982,28 @@ public class MobileNetworkSettings extends PreferenceActivity
                  updatePreferredNetworkUIFromDb();
              }
          }

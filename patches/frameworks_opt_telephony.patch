@@ -1,4 +1,4 @@
-From a6ade52b145dd928ca525ffe1f21571a3d792095 Mon Sep 17 00:00:00 2001
+From 42417e65a360ecf91ba05122c4e899cf46d42531 Mon Sep 17 00:00:00 2001
 From: Pawit Pornkitprasan <p.pawit@gmail.com>
 Date: Sat, 31 May 2014 12:34:56 +0700
 Subject: [PATCH 1/3] telephony: support for RIL that does not send
@@ -14,10 +14,10 @@ Change-Id: Ib7373d32777f6c42ee488972a7aa63ae8e1cd09b
  1 file changed, 19 insertions(+)
 
 diff --git a/src/java/com/android/internal/telephony/PhoneBase.java b/src/java/com/android/internal/telephony/PhoneBase.java
-index 9064926..693ab0d 100644
+index d10283a..ca1c529 100644
 --- a/src/java/com/android/internal/telephony/PhoneBase.java
 +++ b/src/java/com/android/internal/telephony/PhoneBase.java
-@@ -217,6 +217,7 @@ public abstract class PhoneBase extends Handler implements Phone {
+@@ -220,6 +220,7 @@ public abstract class PhoneBase extends Handler implements Phone {
      boolean mDnsCheckDisabled;
      public DcTrackerBase mDcTracker;
      boolean mDoesRilSendMultipleCallRing;
@@ -25,7 +25,7 @@ index 9064926..693ab0d 100644
      int mCallRingContinueToken;
      int mCallRingDelay;
      public boolean mIsTheCurrentActivePhone = true;
-@@ -444,6 +445,11 @@ public abstract class PhoneBase extends Handler implements Phone {
+@@ -449,6 +450,11 @@ public abstract class PhoneBase extends Handler implements Phone {
                  TelephonyProperties.PROPERTY_RIL_SENDS_MULTIPLE_CALL_RING, true);
          Rlog.d(LOG_TAG, "mDoesRilSendMultipleCallRing=" + mDoesRilSendMultipleCallRing);
  
@@ -37,7 +37,7 @@ index 9064926..693ab0d 100644
          mCallRingDelay = SystemProperties.getInt(
                  TelephonyProperties.PROPERTY_CALL_RING_DELAY, 3000);
          Rlog.d(LOG_TAG, "mCallRingDelay=" + mCallRingDelay);
-@@ -2051,6 +2057,18 @@ public abstract class PhoneBase extends Handler implements Phone {
+@@ -2066,6 +2072,18 @@ public abstract class PhoneBase extends Handler implements Phone {
      public void notifyNewRingingConnectionP(Connection cn) {
          if (!mIsVoiceCapable)
              return;
@@ -56,7 +56,7 @@ index 9064926..693ab0d 100644
          AsyncResult ar = new AsyncResult(null, cn, null);
          mNewRingingConnectionRegistrants.notifyRegistrants(ar);
      }
-@@ -2612,6 +2630,7 @@ public abstract class PhoneBase extends Handler implements Phone {
+@@ -2642,6 +2660,7 @@ public abstract class PhoneBase extends Handler implements Phone {
          pw.println(" mDnsCheckDisabled=" + mDnsCheckDisabled);
          pw.println(" mDcTracker=" + mDcTracker);
          pw.println(" mDoesRilSendMultipleCallRing=" + mDoesRilSendMultipleCallRing);
@@ -68,7 +68,7 @@ index 9064926..693ab0d 100644
 2.8.2
 
 
-From 49a6d648b26a798b5e07a0741be0fb9bf16af51e Mon Sep 17 00:00:00 2001
+From 91124c63a18214bf330fda5e47c5fa358533b45b Mon Sep 17 00:00:00 2001
 From: Pawit Pornkitprasan <p.pawit@gmail.com>
 Date: Sat, 15 Nov 2014 17:39:50 +0700
 Subject: [PATCH 2/3] telephony: RIL: i9082: set correct rild names
@@ -79,10 +79,10 @@ Change-Id: Idf8e98ae2f36f30b84be04b7b062ca4b52cebd8a
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/java/com/android/internal/telephony/RIL.java b/src/java/com/android/internal/telephony/RIL.java
-index 493d9c5..1a06585 100644
+index c2f2c81..9ee8886 100644
 --- a/src/java/com/android/internal/telephony/RIL.java
 +++ b/src/java/com/android/internal/telephony/RIL.java
-@@ -281,7 +281,7 @@ public class RIL extends BaseCommands implements CommandsInterface {
+@@ -287,7 +287,7 @@ public class RIL extends BaseCommands implements CommandsInterface {
      static final int RESPONSE_SOLICITED = 0;
      static final int RESPONSE_UNSOLICITED = 1;
  
@@ -95,11 +95,11 @@ index 493d9c5..1a06585 100644
 2.8.2
 
 
-From 9b0d0c37a69ddf0618566dc8308bb0ffc6f483f8 Mon Sep 17 00:00:00 2001
+From fd60f76a5bd4107a603bb2589498866fe928c88e Mon Sep 17 00:00:00 2001
 From: Arne Coucheron <arco68@gmail.com>
 Date: Thu, 24 Mar 2016 20:56:34 +0100
-Subject: [PATCH 3/3] Use registerForAvailable when device is encrypted only for
- RIL version >= 9
+Subject: [PATCH 3/3] Use registerForAvailable when device is encrypted only
+ for RIL version >= 9
 
 On older RIL versions, registerForAvailable causes the sim to not
 being detected. We fixed this for non-encrypted state, but missed it
@@ -111,10 +111,10 @@ Change-Id: I26cca33c10edcbcb8ea10daaa6104eed910354bd
  1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/src/java/com/android/internal/telephony/uicc/UiccController.java b/src/java/com/android/internal/telephony/uicc/UiccController.java
-index ead7813..153a1b0 100644
+index 30b5edf..7b77790 100644
 --- a/src/java/com/android/internal/telephony/uicc/UiccController.java
 +++ b/src/java/com/android/internal/telephony/uicc/UiccController.java
-@@ -122,12 +122,14 @@ private UiccController(Context c, CommandsInterface []ci) {
+@@ -118,12 +118,14 @@ public class UiccController extends Handler {
          if (DBG) log("Creating UiccController");
          mContext = c;
          mCis = ci;

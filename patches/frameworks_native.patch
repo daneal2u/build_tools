@@ -1,7 +1,7 @@
-From 0f5584a82885bb563e53f7f1460321e22e63b28f Mon Sep 17 00:00:00 2001
+From 2ef063459c678b7030c79f7eae0257bbc119a829 Mon Sep 17 00:00:00 2001
 From: Ricardo Cerqueira <cyanogenmod@cerqueira.org>
 Date: Tue, 6 Aug 2013 16:11:06 +0100
-Subject: [PATCH 1/9] libgui: Bring back support for mHeap-based screenshots
+Subject: [PATCH 1/8] libgui: Bring back support for mHeap-based screenshots
 
 Older graphics libraries throw a hissy fit when trying to lock
 buffers for Surface-based screenshots, on at least Tegra2/3 and
@@ -59,7 +59,7 @@ index 84ddb27..563b4d1 100644
          GET_ACTIVE_CONFIG,
          SET_ACTIVE_CONFIG,
 diff --git a/include/gui/SurfaceComposerClient.h b/include/gui/SurfaceComposerClient.h
-index 9ec3f23..ec83b02 100644
+index 37d953e..06e50c6 100644
 --- a/include/gui/SurfaceComposerClient.h
 +++ b/include/gui/SurfaceComposerClient.h
 @@ -40,6 +40,9 @@ namespace android {
@@ -72,7 +72,7 @@ index 9ec3f23..ec83b02 100644
  class ISurfaceComposerClient;
  class IGraphicBufferProducer;
  class Region;
-@@ -193,6 +196,9 @@ public:
+@@ -188,6 +191,9 @@ public:
              bool useIdentityTransform);
  
  private:
@@ -83,7 +83,7 @@ index 9ec3f23..ec83b02 100644
      mutable sp<IGraphicBufferProducer> mProducer;
      CpuConsumer::LockedBuffer mBuffer;
 diff --git a/libs/gui/Android.mk b/libs/gui/Android.mk
-index 8a965dd..e439d84 100644
+index 76aec6e..ae6fc37 100644
 --- a/libs/gui/Android.mk
 +++ b/libs/gui/Android.mk
 @@ -82,6 +82,10 @@ LOCAL_SHARED_LIBRARIES := \
@@ -168,10 +168,10 @@ index 0ad6339..7db2e7f 100644
              CHECK_INTERFACE(ISurfaceComposer, data, reply);
              sp<IBinder> display = data.readStrongBinder();
 diff --git a/libs/gui/SurfaceComposerClient.cpp b/libs/gui/SurfaceComposerClient.cpp
-index 82bdd6b..0be73d6 100644
+index 9955faf..ef44348 100644
 --- a/libs/gui/SurfaceComposerClient.cpp
 +++ b/libs/gui/SurfaceComposerClient.cpp
-@@ -764,6 +764,14 @@ status_t ScreenshotClient::capture(
+@@ -696,6 +696,14 @@ status_t ScreenshotClient::capture(
          uint32_t minLayerZ, uint32_t maxLayerZ, bool useIdentityTransform) {
      sp<ISurfaceComposer> s(ComposerService::getComposerService());
      if (s == NULL) return NO_INIT;
@@ -186,7 +186,7 @@ index 82bdd6b..0be73d6 100644
      return s->captureScreen(display, producer, sourceCrop,
              reqWidth, reqHeight, minLayerZ, maxLayerZ, useIdentityTransform,
              ISurfaceComposer::eRotateNone, SS_CPU_CONSUMER);
-@@ -794,6 +802,19 @@ status_t ScreenshotClient::update(const sp<IBinder>& display,
+@@ -726,6 +734,19 @@ status_t ScreenshotClient::update(const sp<IBinder>& display,
          bool useIdentityTransform, uint32_t rotation) {
      sp<ISurfaceComposer> s(ComposerService::getComposerService());
      if (s == NULL) return NO_INIT;
@@ -206,7 +206,7 @@ index 82bdd6b..0be73d6 100644
      sp<CpuConsumer> cpuConsumer = getCpuConsumer();
  
      if (mHaveBuffer) {
-@@ -813,6 +834,7 @@ status_t ScreenshotClient::update(const sp<IBinder>& display,
+@@ -745,6 +766,7 @@ status_t ScreenshotClient::update(const sp<IBinder>& display,
          }
      }
      return err;
@@ -214,7 +214,7 @@ index 82bdd6b..0be73d6 100644
  }
  
  status_t ScreenshotClient::update(const sp<IBinder>& display,
-@@ -837,12 +859,16 @@ status_t ScreenshotClient::update(const sp<IBinder>& display, Rect sourceCrop,
+@@ -769,12 +791,16 @@ status_t ScreenshotClient::update(const sp<IBinder>& display, Rect sourceCrop,
  }
  
  void ScreenshotClient::release() {
@@ -232,10 +232,10 @@ index 82bdd6b..0be73d6 100644
  
  void const* ScreenshotClient::getPixels() const {
 diff --git a/services/surfaceflinger/Android.mk b/services/surfaceflinger/Android.mk
-index c921329..b80f8fb 100644
+index 27e3570..e7a55d0 100644
 --- a/services/surfaceflinger/Android.mk
 +++ b/services/surfaceflinger/Android.mk
-@@ -64,6 +64,10 @@ ifeq ($(TARGET_RUNNING_WITHOUT_SYNC_FRAMEWORK),true)
+@@ -72,6 +72,10 @@ ifeq ($(TARGET_RUNNING_WITHOUT_SYNC_FRAMEWORK),true)
      LOCAL_CFLAGS += -DRUNNING_WITHOUT_SYNC_FRAMEWORK
  endif
  
@@ -247,10 +247,10 @@ index c921329..b80f8fb 100644
  ifneq ($(VSYNC_EVENT_PHASE_OFFSET_NS),)
      LOCAL_CFLAGS += -DVSYNC_EVENT_PHASE_OFFSET_NS=$(VSYNC_EVENT_PHASE_OFFSET_NS)
 diff --git a/services/surfaceflinger/SurfaceFlinger.cpp b/services/surfaceflinger/SurfaceFlinger.cpp
-index 4051b38..4e122da 100644
+index e4f7991..c95047b 100644
 --- a/services/surfaceflinger/SurfaceFlinger.cpp
 +++ b/services/surfaceflinger/SurfaceFlinger.cpp
-@@ -26,6 +26,9 @@
+@@ -25,6 +25,9 @@
  #include <stdatomic.h>
  
  #include <EGL/egl.h>
@@ -260,7 +260,7 @@ index 4051b38..4e122da 100644
  
  #include <cutils/log.h>
  #include <cutils/iosched_policy.h>
-@@ -3008,12 +3011,18 @@ status_t SurfaceFlinger::onTransact(
+@@ -2945,12 +2948,18 @@ status_t SurfaceFlinger::onTransact(
              break;
          }
          case CAPTURE_SCREEN:
@@ -279,7 +279,7 @@ index 4051b38..4e122da 100644
                      !PermissionCache::checkPermission(sReadFramebuffer, pid, uid)) {
                  ALOGE("Permission Denial: "
                          "can't read framebuffer pid=%d, uid=%d", pid, uid);
-@@ -3349,9 +3358,18 @@ status_t SurfaceFlinger::captureScreen(const sp<IBinder>& display,
+@@ -3286,9 +3295,18 @@ status_t SurfaceFlinger::captureScreen(const sp<IBinder>& display,
              Mutex::Autolock _l(flinger->mStateLock);
              sp<const DisplayDevice> hw(flinger->getDisplayDevice(display));
              bool useReadPixels = this->useReadPixels && !flinger->mGpuToCpuSupported;
@@ -301,7 +301,7 @@ index 4051b38..4e122da 100644
              static_cast<GraphicProducerWrapper*>(IInterface::asBinder(producer).get())->exit(result);
              return true;
          }
-@@ -3633,6 +3651,139 @@ void SurfaceFlinger::checkScreenshot(size_t w, size_t s, size_t h, void const* v
+@@ -3562,6 +3580,139 @@ void SurfaceFlinger::checkScreenshot(size_t w, size_t s, size_t h, void const* v
      }
  }
  
@@ -441,7 +441,7 @@ index 4051b38..4e122da 100644
  /* ------------------------------------------------------------------------
   * Extensions
   */
-@@ -3717,6 +3868,7 @@ SurfaceFlinger::DisplayDeviceState::DisplayDeviceState(DisplayDevice::DisplayTyp
+@@ -3646,6 +3797,7 @@ SurfaceFlinger::DisplayDeviceState::DisplayDeviceState(DisplayDevice::DisplayTyp
  }; // namespace android
  
  
@@ -449,16 +449,16 @@ index 4051b38..4e122da 100644
  #if defined(__gl_h_)
  #error "don't include gl/gl.h in this file"
  #endif
-@@ -3724,3 +3876,4 @@ SurfaceFlinger::DisplayDeviceState::DisplayDeviceState(DisplayDevice::DisplayTyp
+@@ -3653,3 +3805,4 @@ SurfaceFlinger::DisplayDeviceState::DisplayDeviceState(DisplayDevice::DisplayTyp
  #if defined(__gl2_h_)
  #error "don't include gl2/gl2.h in this file"
  #endif
 +#endif
 diff --git a/services/surfaceflinger/SurfaceFlinger.h b/services/surfaceflinger/SurfaceFlinger.h
-index 2028d67..6f31d8e 100644
+index 0ec0863..be8acfe 100644
 --- a/services/surfaceflinger/SurfaceFlinger.h
 +++ b/services/surfaceflinger/SurfaceFlinger.h
-@@ -218,6 +218,13 @@ private:
+@@ -212,6 +212,13 @@ private:
              uint32_t minLayerZ, uint32_t maxLayerZ,
              bool useIdentityTransform, ISurfaceComposer::Rotation rotation,
              bool isCpuConsumer);
@@ -472,7 +472,7 @@ index 2028d67..6f31d8e 100644
      virtual status_t getDisplayStats(const sp<IBinder>& display,
              DisplayStatInfo* stats);
      virtual status_t getDisplayConfigs(const sp<IBinder>& display,
-@@ -383,6 +390,15 @@ private:
+@@ -373,6 +380,15 @@ private:
              bool useIdentityTransform, Transform::orientation_flags rotation,
              bool useReadPixels);
  
@@ -492,10 +492,10 @@ index 2028d67..6f31d8e 100644
 2.8.2
 
 
-From 78a2de4ae8aa82bb46e84e99a1ebd071a47903df Mon Sep 17 00:00:00 2001
+From d66f93c5048fa2b257cf00871c474822cdb5f0cf Mon Sep 17 00:00:00 2001
 From: Pawit Pornkitprasan <p.pawit@gmail.com>
 Date: Wed, 26 Nov 2014 20:04:52 +0700
-Subject: [PATCH 2/9] libgui: fix test after compatibility patches
+Subject: [PATCH 2/8] libgui: fix test after compatibility patches
 
 Change-Id: Iae7333f025bb0271f008e4cc0356cf704800f1b7
 ---
@@ -528,10 +528,10 @@ index 3f495f8..0311d1f 100644
 2.8.2
 
 
-From 276619834837efbdef0d36522591b656e8077755 Mon Sep 17 00:00:00 2001
+From 78510c0235d03d7a18efc7599108dfcbb0bad60e Mon Sep 17 00:00:00 2001
 From: Pawit Pornkitprasan <p.pawit@gmail.com>
 Date: Thu, 14 Nov 2013 15:19:46 +0700
-Subject: [PATCH 3/9] binder: add compat symbol
+Subject: [PATCH 3/8] binder: add compat symbol
 
 Required for older Samsung libtvout
 
@@ -541,7 +541,7 @@ Change-Id: Ib18d2513570382432d49f302ab041230650372f2
  1 file changed, 4 insertions(+)
 
 diff --git a/libs/binder/IPCThreadState.cpp b/libs/binder/IPCThreadState.cpp
-index ef88181..a6daf23 100644
+index af18e11..9eee115 100644
 --- a/libs/binder/IPCThreadState.cpp
 +++ b/libs/binder/IPCThreadState.cpp
 @@ -343,6 +343,10 @@ status_t IPCThreadState::clearLastError()
@@ -559,10 +559,10 @@ index ef88181..a6daf23 100644
 2.8.2
 
 
-From 6f9dbb84c5bcaf805c9db23f7246c42957cd6169 Mon Sep 17 00:00:00 2001
+From b48d547b8da1298c5594d75158ee2d11663b7247 Mon Sep 17 00:00:00 2001
 From: Pawit Pornkitprasan <p.pawit@gmail.com>
 Date: Tue, 10 Dec 2013 19:38:17 +0700
-Subject: [PATCH 4/9] binder: add compat symbols
+Subject: [PATCH 4/8] binder: add compat symbols
 
 Required for libtvservice_binder.so on I9082
 
@@ -572,10 +572,10 @@ Change-Id: I059e92f19e4c5a911d38faa9c4df549c75c90761
  1 file changed, 12 insertions(+)
 
 diff --git a/libs/binder/Parcel.cpp b/libs/binder/Parcel.cpp
-index 22d7ef3..7709a88 100644
+index 4f539a8..7930133 100644
 --- a/libs/binder/Parcel.cpp
 +++ b/libs/binder/Parcel.cpp
-@@ -990,6 +990,12 @@ status_t Parcel::writeDupImmutableBlobFileDescriptor(int fd)
+@@ -998,6 +998,12 @@ status_t Parcel::writeDupImmutableBlobFileDescriptor(int fd)
      return writeDupFileDescriptor(fd);
  }
  
@@ -588,7 +588,7 @@ index 22d7ef3..7709a88 100644
  status_t Parcel::write(const FlattenableHelperInterface& val)
  {
      status_t err;
-@@ -1430,6 +1436,12 @@ status_t Parcel::readBlob(size_t len, ReadableBlob* outBlob) const
+@@ -1442,6 +1448,12 @@ status_t Parcel::readBlob(size_t len, ReadableBlob* outBlob) const
      return NO_ERROR;
  }
  
@@ -605,20 +605,20 @@ index 22d7ef3..7709a88 100644
 2.8.2
 
 
-From 4a39ea27956a1a9c37dcc9cd63c8fcd1f8f3d3e4 Mon Sep 17 00:00:00 2001
+From 94a7b57f2d9864ee5212f677a173249793ecbcd5 Mon Sep 17 00:00:00 2001
 From: Pawit Pornkitprasan <p.pawit@gmail.com>
 Date: Mon, 16 Dec 2013 15:45:42 +0700
-Subject: [PATCH 5/9] sf: CAPRI_HWC: fix rotation artifact
+Subject: [PATCH 5/8] sf: CAPRI_HWC: fix rotation artifact
 
 ---
  services/surfaceflinger/SurfaceFlinger.cpp | 5 +++++
  1 file changed, 5 insertions(+)
 
 diff --git a/services/surfaceflinger/SurfaceFlinger.cpp b/services/surfaceflinger/SurfaceFlinger.cpp
-index 4e122da..064e1d5 100644
+index c95047b..6c60230 100644
 --- a/services/surfaceflinger/SurfaceFlinger.cpp
 +++ b/services/surfaceflinger/SurfaceFlinger.cpp
-@@ -3487,6 +3487,11 @@ status_t SurfaceFlinger::captureScreenImplLocked(
+@@ -3424,6 +3424,11 @@ status_t SurfaceFlinger::captureScreenImplLocked(
  {
      ATRACE_CALL();
  
@@ -634,10 +634,10 @@ index 4e122da..064e1d5 100644
 2.8.2
 
 
-From c2e3e31878824f25187970bb355e8865ea7a10f5 Mon Sep 17 00:00:00 2001
+From 9a133b07caeaf9a40ba79d38c868cfc31d53bc1c Mon Sep 17 00:00:00 2001
 From: Pawit Pornkitprasan <p.pawit@gmail.com>
 Date: Mon, 15 Dec 2014 23:12:44 +0700
-Subject: [PATCH 6/9] SurfaceComposerClient: don't block RGBA_8888 for
+Subject: [PATCH 6/8] SurfaceComposerClient: don't block RGBA_8888 for
  screenshot on CAPRI_HWC
 
 Works here and required for ColorFade animation
@@ -648,10 +648,10 @@ Change-Id: Ie7d549bb63e11380d7efcab27b7e4d9f3eb2a1fe
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/libs/gui/SurfaceComposerClient.cpp b/libs/gui/SurfaceComposerClient.cpp
-index 0be73d6..038b54b 100644
+index ef44348..06a1e5a 100644
 --- a/libs/gui/SurfaceComposerClient.cpp
 +++ b/libs/gui/SurfaceComposerClient.cpp
-@@ -764,7 +764,7 @@ status_t ScreenshotClient::capture(
+@@ -696,7 +696,7 @@ status_t ScreenshotClient::capture(
          uint32_t minLayerZ, uint32_t maxLayerZ, bool useIdentityTransform) {
      sp<ISurfaceComposer> s(ComposerService::getComposerService());
      if (s == NULL) return NO_INIT;
@@ -664,10 +664,10 @@ index 0be73d6..038b54b 100644
 2.8.2
 
 
-From 3ae5f34043d199dc79576b41506a1069bb536bfe Mon Sep 17 00:00:00 2001
+From af1a002d10bdb3707b8552badf305dc6eaa196fc Mon Sep 17 00:00:00 2001
 From: Pawit Pornkitprasan <p.pawit@gmail.com>
 Date: Sat, 20 Dec 2014 19:09:27 +0700
-Subject: [PATCH 7/9] sf: CAPRI_HWC: fix for screen recording
+Subject: [PATCH 7/8] sf: CAPRI_HWC: fix for screen recording
 
 Change-Id: I6c7e59400eab86bc5ec0ffebbcc475fa0fa404d2
 ---
@@ -695,20 +695,20 @@ index 87e5b4d..9634db7 100644
 2.8.2
 
 
-From a9e061a5f8349a68536a6f427547b6e0463fd9de Mon Sep 17 00:00:00 2001
+From 1ca1dcd99b59b69bd268d440c4f26a3745e6ffc6 Mon Sep 17 00:00:00 2001
 From: Pawit Pornkitprasan <p.pawit@gmail.com>
 Date: Sun, 11 Oct 2015 15:28:51 +0700
-Subject: [PATCH 8/9] binder: add compat symbol for RIL
+Subject: [PATCH 8/8] binder: add compat symbol for RIL
 
 ---
  libs/binder/Parcel.cpp | 6 ++++++
  1 file changed, 6 insertions(+)
 
 diff --git a/libs/binder/Parcel.cpp b/libs/binder/Parcel.cpp
-index 7709a88..90c3e12 100644
+index 7930133..c77db35 100644
 --- a/libs/binder/Parcel.cpp
 +++ b/libs/binder/Parcel.cpp
-@@ -851,6 +851,12 @@ status_t Parcel::writeString16(const String16& str)
+@@ -859,6 +859,12 @@ status_t Parcel::writeString16(const String16& str)
      return writeString16(str.string(), str.size());
  }
  
@@ -721,145 +721,6 @@ index 7709a88..90c3e12 100644
  status_t Parcel::writeString16(const char16_t* str, size_t len)
  {
      if (str == NULL) return writeInt32(-1);
--- 
-2.8.2
-
-
-From 7cacf26abbfe2d2169460bc2d9cd7dc6e023fb6b Mon Sep 17 00:00:00 2001
-From: forkbomb <keepcalm444@gmail.com>
-Date: Thu, 3 Dec 2015 20:34:15 +1100
-Subject: [PATCH 9/9] libbinder: allow devices to disable ashmem size tracking
-
-The addition of ashmem size tracking can lead to parcel objects
-overwriting other values on the stack in old binary blobs.
-
-Change-Id: Ife8514be1ba639c4061de38b59794c46bcc2d7f8
----
- include/binder/Parcel.h |  2 ++
- libs/binder/Parcel.cpp  | 34 ++++++++++++++++++++++++++++++++++
- 2 files changed, 36 insertions(+)
-
-diff --git a/include/binder/Parcel.h b/include/binder/Parcel.h
-index 16cd6cf..91ffae0 100644
---- a/include/binder/Parcel.h
-+++ b/include/binder/Parcel.h
-@@ -340,8 +340,10 @@ public:
-         inline void* data() { return mData; }
-     };
- 
-+#ifndef DISABLE_ASHMEM_TRACKING
- private:
-     size_t mOpenAshmemSize;
-+#endif
- 
- public:
-     // TODO: Remove once ABI can be changed.
-diff --git a/libs/binder/Parcel.cpp b/libs/binder/Parcel.cpp
-index 22d7ef3..4f539a8 100644
---- a/libs/binder/Parcel.cpp
-+++ b/libs/binder/Parcel.cpp
-@@ -182,6 +182,10 @@ static void release_object(const sp<ProcessState>& proc,
- 
-                     close(obj.handle);
-                 }
-+#ifdef DISABLE_ASHMEM_TRACKING
-+            } else if (obj.cookie != 0) {
-+                close(obj.handle);
-+#endif
-             }
-             return;
-         }
-@@ -532,7 +536,11 @@ status_t Parcel::appendFrom(const Parcel *parcel, size_t offset, size_t len)
- 
-             flat_binder_object* flat
-                 = reinterpret_cast<flat_binder_object*>(mData + off);
-+#ifndef DISABLE_ASHMEM_TRACKING
-             acquire_object(proc, *flat, this, &mOpenAshmemSize);
-+#else
-+            acquire_object(proc, *flat, this);
-+#endif
- 
-             if (flat->type == BINDER_TYPE_FD) {
-                 // If this is a file descriptor, we need to dup it so the
-@@ -1052,7 +1060,11 @@ restart_write:
-         // Need to write meta-data?
-         if (nullMetaData || val.binder != 0) {
-             mObjects[mObjectsSize] = mDataPos;
-+#ifndef DISABLE_ASHMEM_TRACKING
-             acquire_object(ProcessState::self(), val, this, &mOpenAshmemSize);
-+#else
-+            acquire_object(ProcessState::self(), val, this);
-+#endif
-             mObjectsSize++;
-         }
- 
-@@ -1635,7 +1647,11 @@ void Parcel::releaseObjects()
-         i--;
-         const flat_binder_object* flat
-             = reinterpret_cast<flat_binder_object*>(data+objects[i]);
-+#ifndef DISABLE_ASHMEM_TRACKING
-         release_object(proc, *flat, this, &mOpenAshmemSize);
-+#else
-+        release_object(proc, *flat, this);
-+#endif
-     }
- }
- 
-@@ -1649,7 +1665,11 @@ void Parcel::acquireObjects()
-         i--;
-         const flat_binder_object* flat
-             = reinterpret_cast<flat_binder_object*>(data+objects[i]);
-+#ifndef DISABLE_ASHMEM_TRACKING
-         acquire_object(proc, *flat, this, &mOpenAshmemSize);
-+#else
-+        acquire_object(proc, *flat, this);
-+#endif
-     }
- }
- 
-@@ -1831,7 +1851,11 @@ status_t Parcel::continueWrite(size_t desired)
-                     // will need to rescan because we may have lopped off the only FDs
-                     mFdsKnown = false;
-                 }
-+#ifndef DISABLE_ASHMEM_TRACKING
-                 release_object(proc, *flat, this, &mOpenAshmemSize);
-+#else
-+                release_object(proc, *flat, this);
-+#endif
-             }
-             binder_size_t* objects =
-                 (binder_size_t*)realloc(mObjects, objectsSize*sizeof(binder_size_t));
-@@ -1916,7 +1940,9 @@ void Parcel::initState()
-     mFdsKnown = true;
-     mAllowFds = true;
-     mOwner = NULL;
-+#ifndef DISABLE_ASHMEM_TRACKING
-     mOpenAshmemSize = 0;
-+#endif
- }
- 
- void Parcel::scanForFds() const
-@@ -1939,12 +1965,20 @@ size_t Parcel::getBlobAshmemSize() const
-     // This used to return the size of all blobs that were written to ashmem, now we're returning
-     // the ashmem currently referenced by this Parcel, which should be equivalent.
-     // TODO: Remove method once ABI can be changed.
-+#ifndef DISABLE_ASHMEM_TRACKING
-     return mOpenAshmemSize;
-+#else
-+    return 0;
-+#endif
- }
- 
- size_t Parcel::getOpenAshmemSize() const
- {
-+#ifndef DISABLE_ASHMEM_TRACKING
-     return mOpenAshmemSize;
-+#else
-+    return 0;
-+#endif
- }
- 
- // --- Parcel::Blob ---
 -- 
 2.8.2
 

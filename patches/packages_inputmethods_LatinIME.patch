@@ -1,4 +1,4 @@
-From 21679da3f1bd91ea6d595c67287d02e2174f52f0 Mon Sep 17 00:00:00 2001
+From f4f65a54cd6725ee66f777a53548188afd83ccb1 Mon Sep 17 00:00:00 2001
 From: ghsr <ghsr92@yandex.ru>
 Date: Thu, 5 May 2016 13:09:25 +0600
 Subject: [PATCH] LatinIME: Update JNI fallback lib name

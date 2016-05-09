@@ -1,4 +1,4 @@
-From 3a1aabef3e14125bf1f8acc9145e0d784becfffb Mon Sep 17 00:00:00 2001
+From b52760079d297949f4119eef2883df15ad515c07 Mon Sep 17 00:00:00 2001
 From: Steve Kondik <steve@cyngn.com>
 Date: Mon, 9 Mar 2015 15:07:08 +0000
 Subject: [PATCH 1/4] build: Add support for additional kernel config snippet
@@ -14,10 +14,10 @@ Change-Id: Ifa48688a3f951dd8ecc9a13a27de3a476e7bf633
  1 file changed, 11 insertions(+)
 
 diff --git a/core/tasks/kernel.mk b/core/tasks/kernel.mk
-index 2c49271..764532c 100644
+index d73a259..4afaaa6 100644
 --- a/core/tasks/kernel.mk
 +++ b/core/tasks/kernel.mk
-@@ -72,6 +72,9 @@ ifeq ($(KERNEL_ARCH),arm64)
+@@ -82,6 +82,9 @@ ifeq ($(KERNEL_ARCH),arm64)
    endif
  endif
  
@@ -27,7 +27,7 @@ index 2c49271..764532c 100644
  
  ## Do be discontinued in a future version. Notify builder about target
  ## kernel format requirement
-@@ -204,6 +207,10 @@ $(KERNEL_CONFIG): $(KERNEL_OUT)
+@@ -214,6 +217,10 @@ $(KERNEL_CONFIG): $(KERNEL_OUT)
  			echo "Overriding kernel config with '$(KERNEL_CONFIG_OVERRIDE)'"; \
  			echo $(KERNEL_CONFIG_OVERRIDE) >> $(KERNEL_OUT)/.config; \
  			$(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=$(KERNEL_ARCH) $(KERNEL_CROSS_COMPILE) oldconfig; fi
@@ -38,7 +38,7 @@ index 2c49271..764532c 100644
  
  TARGET_KERNEL_BINARIES: $(KERNEL_OUT) $(KERNEL_CONFIG) $(KERNEL_HEADERS_INSTALL)
  	$(MAKE) $(MAKE_FLAGS) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=$(KERNEL_ARCH) $(KERNEL_CROSS_COMPILE) $(TARGET_PREBUILT_INT_KERNEL_TYPE)
-@@ -232,6 +239,10 @@ $(KERNEL_HEADERS_INSTALL): $(KERNEL_OUT) $(KERNEL_CONFIG)
+@@ -242,6 +249,10 @@ $(KERNEL_HEADERS_INSTALL): $(KERNEL_OUT) $(KERNEL_CONFIG)
  			echo "Overriding kernel config with '$(KERNEL_CONFIG_OVERRIDE)'"; \
  			echo $(KERNEL_CONFIG_OVERRIDE) >> $(KERNEL_OUT)/.config; \
  			$(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=$(KERNEL_ARCH) $(KERNEL_CROSS_COMPILE) oldconfig; fi
@@ -53,7 +53,7 @@ index 2c49271..764532c 100644
 2.8.2
 
 
-From 22ab9b2ad5203ce07259d99ca2e5cef0a3b69f26 Mon Sep 17 00:00:00 2001
+From f6c1f0089c410a5d8fa23fc1e1092e293795f703 Mon Sep 17 00:00:00 2001
 From: Pawit Pornkitprasan <p.pawit@gmail.com>
 Date: Tue, 16 Dec 2014 19:19:52 +0700
 Subject: [PATCH 2/4] minigzip dependency for kernel
@@ -66,10 +66,10 @@ Change-Id: I8c07a76eec568bce641b158d01ef8cd88b9997d4
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/core/tasks/kernel.mk b/core/tasks/kernel.mk
-index 764532c..510047d 100644
+index 4afaaa6..13703da 100644
 --- a/core/tasks/kernel.mk
 +++ b/core/tasks/kernel.mk
-@@ -212,7 +212,7 @@ $(KERNEL_CONFIG): $(KERNEL_OUT)
+@@ -222,7 +222,7 @@ $(KERNEL_CONFIG): $(KERNEL_OUT)
  			cat $(KERNEL_SRC)/arch/$(KERNEL_ARCH)/configs/$(KERNEL_ADDITIONAL_CONFIG) >> $(KERNEL_OUT)/.config; \
  			$(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=$(KERNEL_ARCH) $(KERNEL_CROSS_COMPILE) oldconfig; fi
  
@@ -82,7 +82,7 @@ index 764532c..510047d 100644
 2.8.2
 
 
-From 2b7772cb0e76e29bb3b4a040cc99d1c24bfcb0a5 Mon Sep 17 00:00:00 2001
+From c51436c7ceddb6408dc8e0eff956adb6efcaad98 Mon Sep 17 00:00:00 2001
 From: Cristoforo Cataldo <cristoforo.cataldo@gmail.com>
 Date: Sun, 30 Nov 2014 06:12:35 +0100
 Subject: [PATCH 3/4] core: Enable -mcpu=cortex-a9 flag for Cortex-A9 cpu
@@ -97,10 +97,10 @@ Conflicts:
  1 file changed, 4 insertions(+)
 
 diff --git a/core/combo/arch/arm/armv7-a-neon.mk b/core/combo/arch/arm/armv7-a-neon.mk
-index 99f17aa..164dc2a 100644
+index 094814f..217a451 100644
 --- a/core/combo/arch/arm/armv7-a-neon.mk
 +++ b/core/combo/arch/arm/armv7-a-neon.mk
-@@ -19,6 +19,9 @@ ifneq (,$(filter cortex-a15 krait denver,$(TARGET_$(combo_2nd_arch_prefix)CPU_VA
+@@ -20,6 +20,9 @@ ifneq (,$(filter cortex-a15 krait denver,$(TARGET_$(combo_2nd_arch_prefix)CPU_VA
  	arch_variant_ldflags := \
  		-Wl,--no-fix-cortex-a8
  else
@@ -110,7 +110,7 @@ index 99f17aa..164dc2a 100644
  ifeq ($(strip $(TARGET_$(combo_2nd_arch_prefix)CPU_VARIANT)),cortex-a8)
  	arch_variant_cflags := -mcpu=cortex-a8
  	arch_variant_ldflags := \
-@@ -36,6 +39,7 @@ else
+@@ -37,6 +40,7 @@ else
  endif
  endif
  endif
@@ -122,7 +122,7 @@ index 99f17aa..164dc2a 100644
 2.8.2
 
 
-From 103cd37440f5b2397a9936d89cda932de24485c7 Mon Sep 17 00:00:00 2001
+From 6762f91a6a19125b72353c7aa0b9be6020effc72 Mon Sep 17 00:00:00 2001
 From: Chirayu Desai <cdesai@cyanogenmod.org>
 Date: Wed, 1 May 2013 15:48:08 +0530
 Subject: [PATCH 4/4] envsetup: use $(CURDIR) for getting current directory

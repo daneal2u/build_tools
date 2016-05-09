@@ -1,7 +1,8 @@
-From 5b8262c61c11c9d38a57feaa57ea72fa248ea137 Mon Sep 17 00:00:00 2001
+From e4dd73c83e790f0e498994e68623186f2d038974 Mon Sep 17 00:00:00 2001
 From: Pawit Pornkitprasan <p.pawit@gmail.com>
 Date: Tue, 10 Dec 2013 20:09:12 +0700
-Subject: [PATCH] libbt: switch to N_BRCM_HCI line disclipline for userial ioctl
+Subject: [PATCH] libbt: switch to N_BRCM_HCI line disclipline for userial
+ ioctl
 
 Change-Id: I12c297c6b26fc0cb6f0a36ed8f5d04d4d36a4092
 ---
@@ -36,6 +37,7 @@ index 3ff518b..a038445 100644
 +
      userial_ioctl_init_bt_wake(vnd_userial.fd);
  #endif
+ 
 -- 
 2.8.2
 
